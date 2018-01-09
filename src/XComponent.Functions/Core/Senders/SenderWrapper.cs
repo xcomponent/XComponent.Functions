@@ -54,7 +54,7 @@ namespace XComponent.Functions.Core.Senders
             foreach (var sender in functionResult.Senders)
             {
                 if (!_senderTypeBySenderName.ContainsKey(sender.SenderName))
-                        throw new ValidationException($"Sender {sender.SenderName} not found!");
+                        throw new ValidationException($"Sender '{sender.SenderName}' not found!");
 
                 if (!string.IsNullOrEmpty(sender?.SenderName))
                 {

@@ -60,7 +60,7 @@ namespace XComponent.Functions.Core
                     functionManager.Dispose();
                     _functionsFactoryByKey.Remove(key);
                 } else {
-                    throw new ValidationException($"No manager found for component {functionManager.ComponentName} and state machine {functionManager.StateMachineName}");
+                    throw new ValidationException($"No manager found for component '{functionManager.ComponentName}' and state machine '{functionManager.StateMachineName}'");
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace XComponent.Functions.Core
                 {
                     return _functionsFactoryByKey[key].GetTask();
                 } else {
-                    throw new ValidationException($"No manager found for component {componentName} and state machine {stateMachineName}");
+                    throw new ValidationException($"No manager found for component '{componentName}' and state machine '{stateMachineName}'");
                 }
             }
         }
@@ -88,7 +88,7 @@ namespace XComponent.Functions.Core
                 {
                     _functionsFactoryByKey[key].AddTaskResult(result);
                 } else {
-                    throw new ValidationException($"No manager found for component {result.ComponentName} and state machine {result.StateMachineName}");
+                    throw new ValidationException($"No manager found for component '{result.ComponentName}' and state machine '{result.StateMachineName}'");
                 }
             }
 

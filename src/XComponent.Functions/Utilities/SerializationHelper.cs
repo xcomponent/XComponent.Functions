@@ -40,7 +40,7 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                throw new ValidationException($"Couldn't serialize object {obj}", e);
+                throw new ValidationException($"Couldn't deserialize object '{obj}'", e);
             }
         }
 
@@ -59,7 +59,7 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                throw new ValidationException($"Couldn't deserialize object {objectToDeserialize} from {objType}", e);
+                throw new ValidationException($"Couldn't deserialize object '{objectToDeserialize}' from '{objType}'", e);
             }
         }
     }
