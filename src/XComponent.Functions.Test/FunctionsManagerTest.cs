@@ -396,5 +396,35 @@ namespace XComponent.Functions.Test
             Assert.IsTrue(exception.Message.Contains("Context"),
                     "Exception message should show where is the problem");
         }
+
+        [Test]
+        public void AddTaskResultShouldThrowValidationExceptionWhenInvalidRequestId()
+        {
+            var sender = new object();
+
+            var functionResult = new FunctionResult() { 
+                RequestId = "unknown request id"
+            };
+
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
+
+            while(true)
+            {
+                var postedTask = functionsManager.GetTask();
+                if (postedTask != null)
+                {
+                    break;
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+            
+            var exception = Assert.Throws<ValidationException>(() 
+                    => functionsManager.AddTaskResult(functionResult));
+
+            Assert.IsTrue(exception.Message.Contains("unknown request id"),
+                    "Exception message should show where is the problem");
+        }
     }
 }

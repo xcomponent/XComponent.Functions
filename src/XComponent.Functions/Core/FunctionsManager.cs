@@ -9,6 +9,7 @@ using XComponent.Functions.Core.Owin;
 using XComponent.Functions.Core.Senders;
 using XComponent.Functions.Core.Exceptions;
 using XComponent.Functions.Utilities;
+using System.Collections.Concurrent;
 
 namespace XComponent.Functions.Core
 {
@@ -20,6 +21,7 @@ namespace XComponent.Functions.Core
         internal event Action<FunctionResult> NewTaskFunctionResult;
 
         private readonly Dictionary<object, SenderWrapper> _senderWrapperBySender = new Dictionary<object, SenderWrapper>();
+        private List<string> _pendingRequests = new List<string>();
 
         internal FunctionsManager(string componentName, string stateMachineName)
         {
@@ -91,10 +93,19 @@ namespace XComponent.Functions.Core
                 if (result.RequestId == requestId)
                 {
                     NewTaskFunctionResult -= resultHandler;
+                    lock(_pendingRequests) 
+                    {
+                        _pendingRequests.Remove(requestId);
+                    }
                     functionResult = result;
                     autoResetEvent.Set();
                 }
             };
+
+            lock(_pendingRequests) 
+            {
+                _pendingRequests.Add(requestId);
+            }
 
             NewTaskFunctionResult += resultHandler;
 
@@ -119,6 +130,11 @@ namespace XComponent.Functions.Core
         public void AddTaskResult(FunctionResult functionResult)
         {
             if (functionResult == null) throw new ValidationException("Function result cannot be null");
+            lock(_pendingRequests)
+            {
+                if (!_pendingRequests.Contains(functionResult.RequestId))
+                    throw new ValidationException($"Unknown request id '{functionResult.RequestId}'");
+            }
             NewTaskFunctionResult?.Invoke(functionResult);
         }
 
