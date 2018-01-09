@@ -64,7 +64,7 @@ Task("Build")
     else
     {
       // Use XBuild
-      MSBuild("./src/XComponent.Functions/XComponent.Functions.sln", settings =>
+      MSBuild("./src/XComponent.Functions/XComponent.Functions.csproj", settings =>
         settings.SetConfiguration(configuration));
     }
 });
