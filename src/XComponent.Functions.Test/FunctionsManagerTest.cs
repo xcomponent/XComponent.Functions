@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using XComponent.Functions.Core;
+using XComponent.Functions.Core.Exceptions;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using XComponent.Functions.Core.Senders;
@@ -47,6 +48,66 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
+        public void NullSenderThrowsValidationException() {
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var exception = Assert.Throws<ValidationException>(() => 
+                functionsManager.
+                    AddTask(new object(), new object(), new object(), new object(), null, "function"));
+
+            Assert.IsTrue(exception.Message.Contains("Sender"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
+        public void NullPublicMemberThrowsValidationException() {
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var exception = Assert.Throws<ValidationException>(() => 
+                functionsManager.
+                    AddTask(new object(), null, new object(), new object(), new object(), "function"));
+
+            Assert.IsTrue(exception.Message.Contains("Public"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
+        public void NullInternalMemberThrowsValidationException() {
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var exception = Assert.Throws<ValidationException>(() => 
+                functionsManager.
+                    AddTask(new object(), new object(), null, new object(), new object(), "function"));
+
+            Assert.IsTrue(exception.Message.Contains("Internal"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
+        public void NullContextThrowsValidationException() {
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var exception = Assert.Throws<ValidationException>(() => 
+                functionsManager.
+                    AddTask(new object(), new object(), new object(), null, new object(), "function"));
+
+            Assert.IsTrue(exception.Message.Contains("Context"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
+        public void NullEventThrowsValidationException() {
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var exception = Assert.Throws<ValidationException>(() => 
+                functionsManager.
+                    AddTask(null, new object(), new object(), new object(), new object(), "function"));
+
+            Assert.IsTrue(exception.Message.Contains("Event"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
         public async Task AddTaskAsyncShouldReturnPostedResult() {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
@@ -74,6 +135,16 @@ namespace XComponent.Functions.Test
             var publishedResult = await task;
 
             Assert.AreEqual(functionResult, publishedResult);
+        }
+
+        [Test]
+        public void NullFunctionResultThrowsValidationException() {
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var exception = Assert.Throws<ValidationException>(() => functionsManager.AddTaskResult(null));
+
+            Assert.IsTrue(exception.Message.Contains("null"),
+                    "Exception message should show where is the problem");
         }
 
         private class PublicMember {
@@ -170,11 +241,18 @@ namespace XComponent.Functions.Test
 
             var sender = new object(); 
             var context = new object();
+            var internalMember = new object();
             var functionsManager = new FunctionsManager("component", "statemachine");
-            functionsManager.AddTask(null, null, null, context, sender);
+
+            functionsManager.AddTask(new object(),
+                    publicMemberBefore,
+                    internalMember,
+                    context,
+                    sender);
+
             functionsManager.ApplyFunctionResult(functionResult,
                     publicMemberBefore,
-                    null,
+                    new object(),
                     context,
                     sender);
 
@@ -182,8 +260,49 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void ApplyFunctionResultShouldThrowSerializationException()
+        public void ApplyFunctionResultShouldThrowInvalidSenderValidationException()
         {
+            var sender = new object();
+            var functionResult = new FunctionResult()
+            {
+                Senders = new List<SenderResult>() {
+                    new SenderResult
+                    { 
+                        SenderName = "UnknownSender",
+                        SenderParameter =  "{ \"Value\": \"undo\" }",
+                        UseContext = false
+                    },
+                },
+            };
+
+            var functionsManager = new FunctionsManager("component", "statemachine");
+            
+            functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
+
+            while(true)
+            {
+                var postedTask = functionsManager.GetTask();
+                if (postedTask != null)
+                {
+                    break;
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+
+            var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(functionResult,
+                new object(),
+                new object(),
+                new object(),
+                sender));
+
+            Assert.IsTrue(exception.Message.Contains("UnknownSender"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
+        public void ApplyFunctionResultShouldThrowValidationExceptionWhenDeserializationFails()
+        {
+            var sender = new object();
             var publicMemberBefore = new PublicMember() { State = "before" };
 
             var publicMemberAfter = new JObject();
@@ -195,24 +314,87 @@ namespace XComponent.Functions.Test
             };
 
             var functionsManager = new FunctionsManager("component", "statemachine");
+
+            functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
+
+            while(true)
+            {
+                var postedTask = functionsManager.GetTask();
+                if (postedTask != null)
+                {
+                    break;
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
             
-            Assert.Throws<SerializationException>(() => functionsManager.ApplyFunctionResult(functionResult,
+            var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(functionResult,
                 publicMemberBefore,
-                null,
                 new object(),
-                new object()));
+                new object(),
+                sender));
+
+            Assert.IsTrue(exception.Message.Contains("Hello"),
+                    "Exception message should show where is the problem");
         }
 
         [Test]
-        public void ApplyFunctionResultShouldThrowSenderNotFoundException()
+        public void ApplyFunctionResultShouldThrowValidationExceptionWhenNullFunctionResult()
         {
+            var sender = new object();
+
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            Assert.Throws<Exception>(() => functionsManager.ApplyFunctionResult(null,
-                null,
-                null,
+            functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
+
+            while(true)
+            {
+                var postedTask = functionsManager.GetTask();
+                if (postedTask != null)
+                {
+                    break;
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+            
+            var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(null,
                 new object(),
-                new object()));
+                new object(),
+                new object(),
+                sender));
+
+            Assert.IsTrue(exception.Message.Contains("Result"),
+                    "Exception message should show where is the problem");
+        }
+
+        [Test]
+        public void ApplyFunctionResultShouldThrowValidationExceptionWhenNullContext()
+        {
+            var sender = new object();
+
+            var functionResult = new FunctionResult() { };
+
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
+
+            while(true)
+            {
+                var postedTask = functionsManager.GetTask();
+                if (postedTask != null)
+                {
+                    break;
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+            
+            var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(functionResult,
+                new object(),
+                new object(),
+                null,
+                sender));
+
+            Assert.IsTrue(exception.Message.Contains("Context"),
+                    "Exception message should show where is the problem");
         }
     }
 }

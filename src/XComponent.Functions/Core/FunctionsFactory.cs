@@ -59,6 +59,8 @@ namespace XComponent.Functions.Core
                 {
                     functionManager.Dispose();
                     _functionsFactoryByKey.Remove(key);
+                } else {
+                    throw new ValidationException($"No manager found for component {functionManager.ComponentName} and state machine {functionManager.StateMachineName}");
                 }
             }
         }
@@ -75,8 +77,6 @@ namespace XComponent.Functions.Core
                     throw new ValidationException($"No manager found for component {componentName} and state machine {stateMachineName}");
                 }
             }
-
-            return null;
         }
 
         public void AddTaskResult(FunctionResult result)

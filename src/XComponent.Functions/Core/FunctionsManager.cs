@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using XComponent.Functions.Core.Clone;
 using XComponent.Functions.Core.Owin;
 using XComponent.Functions.Core.Senders;
+using XComponent.Functions.Core.Exceptions;
 using XComponent.Functions.Utilities;
 
 namespace XComponent.Functions.Core
@@ -35,12 +36,21 @@ namespace XComponent.Functions.Core
         }
 
         public void ApplyFunctionResult(FunctionResult result, object publicMember, object internalMember, object context, object sender) {
+            if (result == null)
+                throw new ValidationException("Result should not be null");
+
+            if (!_senderWrapperBySender.ContainsKey(sender))
+                throw new ValidationException("Sender object received from worker not found in dictionary");
+
+            if (context == null)
+                throw new ValidationException("Context should not be null");
 
             if (publicMember != null && result.PublicMember != null)
             {
                 var newPublicMember = SerializationHelper.DeserializeObjectFromType(publicMember.GetType(), result.PublicMember);
                 XCClone.Clone(newPublicMember, publicMember);
             }
+
             if (internalMember != null && result.InternalMember != null)
             {
                 var newInternalMember = SerializationHelper.DeserializeObjectFromType(internalMember.GetType(), result.InternalMember);
@@ -49,17 +59,19 @@ namespace XComponent.Functions.Core
             
             lock (_senderWrapperBySender)
             {
-                if (_senderWrapperBySender.ContainsKey(sender)) {
-                    _senderWrapperBySender[sender].TriggerSender(result, context);
-                } else {
-                    throw new Exception("Sender received from worker not found in dictionary");
-                }
+                _senderWrapperBySender[sender].TriggerSender(result, context);
             }
         }
 
         public Task<FunctionResult> AddTaskAsync(object xcEvent, object publicMember, object internalMember,
             object context, object sender, [CallerMemberName] string functionName = null) 
         {
+            if (xcEvent == null) throw new ValidationException("Event should not be null");
+            if (publicMember == null) throw new ValidationException("Public member should not be null");
+            if (internalMember == null) throw new ValidationException("Internal member should not be null");
+            if (context == null) throw new ValidationException("Context should not be null");
+            if (sender == null) throw new ValidationException("Sender should not be null");
+
             RegisterSender(sender);
 
             var functionParameter =  FunctionParameterFactory.CreateFunctionParameter(xcEvent,
@@ -106,6 +118,7 @@ namespace XComponent.Functions.Core
 
         public void AddTaskResult(FunctionResult functionResult)
         {
+            if (functionResult == null) throw new ValidationException("Function result cannot be null");
             NewTaskFunctionResult?.Invoke(functionResult);
         }
 
@@ -122,6 +135,9 @@ namespace XComponent.Functions.Core
 
         private void RegisterSender(object sender)
         {
+            if (sender == null) 
+                throw new ValidationException("Sender object cannot be null");
+
             lock (_senderWrapperBySender)
             {
                 if (!_senderWrapperBySender.ContainsKey(sender))

@@ -43,8 +43,6 @@ namespace XComponent.Functions.Test
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine(responseContent);
-
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.IsTrue(responseContent.Contains(wrongComponentName),
                     "Error message states what is wrong with the request");

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using XComponent.Functions.Core.Exceptions;
 
 namespace XComponent.Functions.Utilities
 {
@@ -40,7 +40,7 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                throw new SerializationException($"Couldn't serialize object {obj}",e );
+                throw new ValidationException($"Couldn't serialize object {obj}", e);
             }
         }
 
@@ -59,7 +59,7 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                throw new SerializationException($"Couldn't deserialize object from {objType}", e);
+                throw new ValidationException($"Couldn't deserialize object {objectToDeserialize} from {objType}", e);
             }
         }
     }
