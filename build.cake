@@ -36,6 +36,18 @@ Task("Test")
   .IsDependentOn("Merge")
   .Does(() =>
   {
+    if(IsRunningOnWindows())
+    {
+      // Use MSBuild
+      MSBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj", settings =>
+        settings.SetConfiguration(configuration));
+    }
+    else
+    {
+      // Use XBuild
+      MSBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj", settings =>
+        settings.SetConfiguration(configuration));
+    }
     NUnit3(GetFiles("./**/bin/" + configuration + "/*Test*.dll"));	
   });
 
@@ -46,13 +58,13 @@ Task("Build")
     if(IsRunningOnWindows())
     {
       // Use MSBuild
-      MSBuild("./src/XComponent.Functions.sln", settings =>
+      MSBuild("./src/XComponent.Functions/XComponent.Functions.csproj", settings =>
         settings.SetConfiguration(configuration));
     }
     else
     {
       // Use XBuild
-      XBuild("./src/XComponent.Functions.sln", settings =>
+      MSBuild("./src/XComponent.Functions/XComponent.Functions.sln", settings =>
         settings.SetConfiguration(configuration));
     }
 });
