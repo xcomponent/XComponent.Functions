@@ -71,6 +71,8 @@ namespace XComponent.Functions.Core
                 if (_functionsFactoryByKey.ContainsKey(key))
                 {
                     return _functionsFactoryByKey[key].GetTask();
+                } else {
+                    throw new ValidationException($"No manager found for component {componentName} and state machine {stateMachineName}");
                 }
             }
 
@@ -85,6 +87,8 @@ namespace XComponent.Functions.Core
                 if (_functionsFactoryByKey.ContainsKey(key))
                 {
                     _functionsFactoryByKey[key].AddTaskResult(result);
+                } else {
+                    throw new ValidationException($"No manager found for component {result.ComponentName} and state machine {result.StateMachineName}");
                 }
             }
 

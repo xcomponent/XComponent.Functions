@@ -33,6 +33,7 @@ Task("Restore-NuGet-Packages")
 
 Task("Test")
   .IsDependentOn("Build")
+  .IsDependentOn("Merge")
   .Does(() =>
   {
     NUnit3(GetFiles("./**/bin/" + configuration + "/*Test*.dll"));	
