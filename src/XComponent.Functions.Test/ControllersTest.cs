@@ -4,6 +4,7 @@ using XComponent.Functions.Core;
 using System.Net;
 using System.Text;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace XComponent.Functions.Test
@@ -20,7 +21,9 @@ namespace XComponent.Functions.Test
         private string _baseAddress;
 
         public ControllersTest() {
-			Environment.SetEnvironmentVariable("OWIN_SERVER", "Microsoft.Owin.Host.HttpListener.OwinServerFactory, XComponent.Functions.Core");
+            Environment.SetEnvironmentVariable(
+                    "OWIN_SERVER",
+                    "Microsoft.Owin.Host.HttpListener.OwinServerFactory, XComponent.Functions.Core");
 
             _baseAddress = $"http://127.0.0.1:{Port}";
 
@@ -32,39 +35,40 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void GetControllerReturnsBadRequestIfComponentUnknown() {
-            var address = $"http://127.0.0.1:{Port}/api/Functions?componentName={ComponentName+"Wrong"}&StateMachineName={StateMachineName}";
-            var httpClient = new HttpClient();
+        public async Task GetControllerReturnsBadRequestIfComponentUnknown() {
+            var wrongComponentName = ComponentName + "Wrong";
+            var address = $"http://127.0.0.1:{Port}/api/Functions?componentName={wrongComponentName}&StateMachineName={StateMachineName}";
 
-            var responseTask = httpClient.GetAsync(address);
+            var response = await new HttpClient().GetAsync(address);
 
-            responseTask.Wait();
+            var responseContent = await response.Content.ReadAsStringAsync();
 
-            var response = responseTask.Result;
+            Console.WriteLine(responseContent);
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.IsTrue(responseContent.Contains(wrongComponentName),
+                    "Error message states what is wrong with the request");
         }
 
         [Test]
-        public void PostTaskControllerReturnsBadRequestIfUnknownComponentName() {
+        public async Task PostTaskControllerReturnsBadRequestIfUnknownComponentName() {
+            var wrongComponentName = ComponentName + "Wrong";
             var address = $"http://127.0.0.1:{Port}/api/Functions";
-            var httpClient = new HttpClient();
 
             var functionResult = new FunctionResult() {
-                ComponentName = ComponentName + "Wrong",
+                ComponentName = wrongComponentName,
                 StateMachineName = StateMachineName
             };
 
             var jsonString = JsonConvert.SerializeObject(functionResult);
             var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
-            var responseTask = httpClient.PostAsync(address, content);
-
-            responseTask.Wait();
-
-            var response = responseTask.Result;
+            var response = await new HttpClient().PostAsync(address, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.IsTrue(responseContent.Contains(wrongComponentName),
+                    "Error message states what is wrong with the request");
         }
     }
 }
