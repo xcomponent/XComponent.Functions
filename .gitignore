@@ -3,6 +3,7 @@
 [Oo]bj/
 [Pp]ackages/
 generated/
+.vs
 
 # Build related
 tools/**
