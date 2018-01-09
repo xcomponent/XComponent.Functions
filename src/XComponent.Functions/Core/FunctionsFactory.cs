@@ -12,18 +12,21 @@ namespace XComponent.Functions.Core
         internal static IFunctionsFactory instance;
         internal static object syncRoot = new Object();
 
-        public static IFunctionsFactory Instance  
+        public static IFunctionsFactory Instance
         {
-            get {
-                if (instance == null) {
-                    lock (syncRoot) {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncRoot)
+                    {
                         instance = new FunctionsFactory();
                     }
                 }
                 return instance;
             }
         }
-        
+
         private FunctionsFactory() { }
 
         private static readonly Dictionary<int, IFunctionsManager> _functionsFactoryByKey = new Dictionary<int, IFunctionsManager>();
@@ -38,7 +41,7 @@ namespace XComponent.Functions.Core
                 int key = GetFunctionsManagerKey(componentName, stateMachineName);
                 if (_functionsFactoryByKey.ContainsKey(key))
                 {
-                    throw  new FunctionsFactoryException("A function manager is already registered for: " + componentName + "," + stateMachineName);
+                    throw new FunctionsFactoryException("A function manager is already registered for: " + componentName + "," + stateMachineName);
                 }
 
                 functionsManager.InitManager(url);
@@ -59,7 +62,9 @@ namespace XComponent.Functions.Core
                 {
                     functionManager.Dispose();
                     _functionsFactoryByKey.Remove(key);
-                } else {
+                }
+                else
+                {
                     throw new ValidationException($"No manager found for component '{functionManager.ComponentName}' and state machine '{functionManager.StateMachineName}'");
                 }
             }
@@ -73,7 +78,9 @@ namespace XComponent.Functions.Core
                 if (_functionsFactoryByKey.ContainsKey(key))
                 {
                     return _functionsFactoryByKey[key].GetTask();
-                } else {
+                }
+                else
+                {
                     throw new ValidationException($"No manager found for component '{componentName}' and state machine '{stateMachineName}'");
                 }
             }
@@ -87,7 +94,9 @@ namespace XComponent.Functions.Core
                 if (_functionsFactoryByKey.ContainsKey(key))
                 {
                     _functionsFactoryByKey[key].AddTaskResult(result);
-                } else {
+                }
+                else
+                {
                     throw new ValidationException($"No manager found for component '{result.ComponentName}' and state machine '{result.StateMachineName}'");
                 }
             }

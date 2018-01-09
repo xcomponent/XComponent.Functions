@@ -19,12 +19,14 @@ namespace XComponent.Functions.Test
     {
 
         [SetUp]
-        public void SetUp() {
-           Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+        public void SetUp()
+        {
+            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
         }
 
         [Test]
-        public void AddTaskShouldPutTaskOnQueue() {
+        public void AddTaskShouldPutTaskOnQueue()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
             var xcEvent = new object();
@@ -48,10 +50,11 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void NullSenderThrowsValidationException() {
+        public void NullSenderThrowsValidationException()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() => 
+            var exception = Assert.Throws<ValidationException>(() =>
                 functionsManager.
                     AddTask(new object(), new object(), new object(), new object(), null, "function"));
 
@@ -60,10 +63,11 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void NullPublicMemberThrowsValidationException() {
+        public void NullPublicMemberThrowsValidationException()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() => 
+            var exception = Assert.Throws<ValidationException>(() =>
                 functionsManager.
                     AddTask(new object(), null, new object(), new object(), new object(), "function"));
 
@@ -72,10 +76,11 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void NullInternalMemberThrowsValidationException() {
+        public void NullInternalMemberThrowsValidationException()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() => 
+            var exception = Assert.Throws<ValidationException>(() =>
                 functionsManager.
                     AddTask(new object(), new object(), null, new object(), new object(), "function"));
 
@@ -84,10 +89,11 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void NullContextThrowsValidationException() {
+        public void NullContextThrowsValidationException()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() => 
+            var exception = Assert.Throws<ValidationException>(() =>
                 functionsManager.
                     AddTask(new object(), new object(), new object(), null, new object(), "function"));
 
@@ -96,10 +102,11 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void NullEventThrowsValidationException() {
+        public void NullEventThrowsValidationException()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() => 
+            var exception = Assert.Throws<ValidationException>(() =>
                 functionsManager.
                     AddTask(null, new object(), new object(), new object(), new object(), "function"));
 
@@ -108,7 +115,8 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public async Task AddTaskAsyncShouldReturnPostedResult() {
+        public async Task AddTaskAsyncShouldReturnPostedResult()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
             var xcEvent = new object();
@@ -121,7 +129,8 @@ namespace XComponent.Functions.Test
 
             var enqueuedParameter = functionsManager.GetTask();
 
-            var functionResult = new FunctionResult() {
+            var functionResult = new FunctionResult()
+            {
                 ComponentName = "component",
                 StateMachineName = "statemachine",
                 PublicMember = "{}",
@@ -138,7 +147,8 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void NullFunctionResultThrowsValidationException() {
+        public void NullFunctionResultThrowsValidationException()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
             var exception = Assert.Throws<ValidationException>(() => functionsManager.AddTaskResult(null));
@@ -147,15 +157,18 @@ namespace XComponent.Functions.Test
                     "Exception message should show where is the problem");
         }
 
-        private class PublicMember {
+        private class PublicMember
+        {
             public string State { get; set; }
         }
 
-        public class DoEvent {
+        public class DoEvent
+        {
             public string Value { get; set; }
         }
 
-        public class UndoEvent {
+        public class UndoEvent
+        {
             public string Value { get; set; }
         }
 
@@ -169,7 +182,8 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public async Task AddTaskShouldApplyPostedResultAndCallSenders() {
+        public async Task AddTaskShouldApplyPostedResultAndCallSenders()
+        {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
             var xcEvent = new object();
@@ -180,26 +194,28 @@ namespace XComponent.Functions.Test
 
             var task = functionsManager.AddTask(xcEvent, publicMember, internalMember, context, sender, "function");
 
-            Task.Run(() => {
-                while(true)
+            Task.Run(() =>
+            {
+                while (true)
                 {
                     var postedTask = functionsManager.GetTask();
                     if (postedTask != null)
                     {
-                        var functionResult = new FunctionResult() {
+                        var functionResult = new FunctionResult()
+                        {
                             ComponentName = "component",
                             StateMachineName = "statemachine",
                             PublicMember = "{ \"State\": \"after\" }",
-                            Senders = new List<SenderResult> 
+                            Senders = new List<SenderResult>
                             {
-                                new SenderResult 
+                                new SenderResult
                                 {
                                     SenderName = "Do",
                                     SenderParameter =  "{ \"Value\": \"do\" }",
                                     UseContext = true
                                 },
                                 new SenderResult
-                                { 
+                                {
                                     SenderName = "Undo",
                                     SenderParameter =  "{ \"Value\": \"undo\" }",
                                     UseContext = false
@@ -229,17 +245,19 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public void ApplyPostedResultShouldWorkWithJObjects() {
+        public void ApplyPostedResultShouldWorkWithJObjects()
+        {
             var publicMemberBefore = new PublicMember() { State = "before" };
 
             var publicMemberAfter = new JObject();
             publicMemberAfter.Add("State", new JValue("after"));
 
-            var functionResult = new FunctionResult() {
+            var functionResult = new FunctionResult()
+            {
                 PublicMember = publicMemberAfter,
             };
 
-            var sender = new object(); 
+            var sender = new object();
             var context = new object();
             var internalMember = new object();
             var functionsManager = new FunctionsManager("component", "statemachine");
@@ -267,7 +285,7 @@ namespace XComponent.Functions.Test
             {
                 Senders = new List<SenderResult>() {
                     new SenderResult
-                    { 
+                    {
                         SenderName = "UnknownSender",
                         SenderParameter =  "{ \"Value\": \"undo\" }",
                         UseContext = false
@@ -276,10 +294,10 @@ namespace XComponent.Functions.Test
             };
 
             var functionsManager = new FunctionsManager("component", "statemachine");
-            
+
             functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
 
-            while(true)
+            while (true)
             {
                 var postedTask = functionsManager.GetTask();
                 if (postedTask != null)
@@ -317,7 +335,7 @@ namespace XComponent.Functions.Test
 
             functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
 
-            while(true)
+            while (true)
             {
                 var postedTask = functionsManager.GetTask();
                 if (postedTask != null)
@@ -326,7 +344,7 @@ namespace XComponent.Functions.Test
                 }
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
-            
+
             var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(functionResult,
                 publicMemberBefore,
                 new object(),
@@ -346,7 +364,7 @@ namespace XComponent.Functions.Test
 
             functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
 
-            while(true)
+            while (true)
             {
                 var postedTask = functionsManager.GetTask();
                 if (postedTask != null)
@@ -355,7 +373,7 @@ namespace XComponent.Functions.Test
                 }
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
-            
+
             var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(null,
                 new object(),
                 new object(),
@@ -377,7 +395,7 @@ namespace XComponent.Functions.Test
 
             functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
 
-            while(true)
+            while (true)
             {
                 var postedTask = functionsManager.GetTask();
                 if (postedTask != null)
@@ -386,7 +404,7 @@ namespace XComponent.Functions.Test
                 }
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
-            
+
             var exception = Assert.Throws<ValidationException>(() => functionsManager.ApplyFunctionResult(functionResult,
                 new object(),
                 new object(),
@@ -402,7 +420,8 @@ namespace XComponent.Functions.Test
         {
             var sender = new object();
 
-            var functionResult = new FunctionResult() { 
+            var functionResult = new FunctionResult()
+            {
                 RequestId = "unknown request id"
             };
 
@@ -410,7 +429,7 @@ namespace XComponent.Functions.Test
 
             functionsManager.AddTask(new object(), new object(), new object(), new object(), sender, "function");
 
-            while(true)
+            while (true)
             {
                 var postedTask = functionsManager.GetTask();
                 if (postedTask != null)
@@ -419,8 +438,8 @@ namespace XComponent.Functions.Test
                 }
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
-            
-            var exception = Assert.Throws<ValidationException>(() 
+
+            var exception = Assert.Throws<ValidationException>(()
                     => functionsManager.AddTaskResult(functionResult));
 
             Assert.IsTrue(exception.Message.Contains("unknown request id"),

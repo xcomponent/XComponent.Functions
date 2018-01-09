@@ -29,15 +29,16 @@ namespace XComponent.Functions.Core
             StateMachineName = stateMachineName;
         }
 
-        public string ComponentName { get;  }
-        public string StateMachineName { get;  }
+        public string ComponentName { get; }
+        public string StateMachineName { get; }
 
         internal void InitManager(Uri url)
         {
             _owinServerRef = OwinServerFactory.CreateOwinServer(url);
         }
 
-        public void ApplyFunctionResult(FunctionResult result, object publicMember, object internalMember, object context, object sender) {
+        public void ApplyFunctionResult(FunctionResult result, object publicMember, object internalMember, object context, object sender)
+        {
             if (result == null)
                 throw new ValidationException("Result should not be null");
 
@@ -58,7 +59,7 @@ namespace XComponent.Functions.Core
                 var newInternalMember = SerializationHelper.DeserializeObjectFromType(internalMember.GetType(), result.InternalMember);
                 XCClone.Clone(newInternalMember, internalMember);
             }
-            
+
             lock (_senderWrapperBySender)
             {
                 _senderWrapperBySender[sender].TriggerSender(result, context);
@@ -66,7 +67,7 @@ namespace XComponent.Functions.Core
         }
 
         public Task<FunctionResult> AddTaskAsync(object xcEvent, object publicMember, object internalMember,
-            object context, object sender, [CallerMemberName] string functionName = null) 
+            object context, object sender, [CallerMemberName] string functionName = null)
         {
             if (xcEvent == null) throw new ValidationException("Event should not be null");
             if (publicMember == null) throw new ValidationException("Public member should not be null");
@@ -76,7 +77,7 @@ namespace XComponent.Functions.Core
 
             RegisterSender(sender);
 
-            var functionParameter =  FunctionParameterFactory.CreateFunctionParameter(xcEvent,
+            var functionParameter = FunctionParameterFactory.CreateFunctionParameter(xcEvent,
                 publicMember,
                 internalMember,
                 context, ComponentName,
@@ -84,16 +85,16 @@ namespace XComponent.Functions.Core
 
             var requestId = functionParameter.RequestId;
             FunctionResult functionResult = null;
-            
+
             var autoResetEvent = new AutoResetEvent(false);
 
             Action<FunctionResult> resultHandler = null;
-            resultHandler = delegate(FunctionResult result)
+            resultHandler = delegate (FunctionResult result)
             {
                 if (result.RequestId == requestId)
                 {
                     NewTaskFunctionResult -= resultHandler;
-                    lock(_pendingRequests) 
+                    lock (_pendingRequests)
                     {
                         _pendingRequests.Remove(requestId);
                     }
@@ -102,7 +103,7 @@ namespace XComponent.Functions.Core
                 }
             };
 
-            lock(_pendingRequests) 
+            lock (_pendingRequests)
             {
                 _pendingRequests.Add(requestId);
             }
@@ -122,7 +123,8 @@ namespace XComponent.Functions.Core
             object context, object sender, [CallerMemberName] string functionName = null)
         {
             return AddTaskAsync(xcEvent, publicMember, internalMember, context, sender, functionName)
-                    .ContinueWith((taskResult) => {
+                    .ContinueWith((taskResult) =>
+                    {
                         ApplyFunctionResult(taskResult.Result, publicMember, internalMember, context, sender);
                     });
         }
@@ -130,7 +132,7 @@ namespace XComponent.Functions.Core
         public void AddTaskResult(FunctionResult functionResult)
         {
             if (functionResult == null) throw new ValidationException("Function result cannot be null");
-            lock(_pendingRequests)
+            lock (_pendingRequests)
             {
                 if (!_pendingRequests.Contains(functionResult.RequestId))
                     throw new ValidationException($"Unknown request id '{functionResult.RequestId}'");
@@ -151,7 +153,7 @@ namespace XComponent.Functions.Core
 
         private void RegisterSender(object sender)
         {
-            if (sender == null) 
+            if (sender == null)
                 throw new ValidationException("Sender object cannot be null");
 
             lock (_senderWrapperBySender)

@@ -20,7 +20,8 @@ namespace XComponent.Functions.Test
         private const string StateMachineName = "StateMachineName";
         private string _baseAddress;
 
-        public ControllersTest() {
+        public ControllersTest()
+        {
             Environment.SetEnvironmentVariable(
                     "OWIN_SERVER",
                     "Microsoft.Owin.Host.HttpListener.OwinServerFactory, XComponent.Functions.Core");
@@ -30,12 +31,13 @@ namespace XComponent.Functions.Test
             _functionsManager = FunctionsFactory.Instance
                 .CreateFunctionsManager(
                         ComponentName,
-                        StateMachineName, 
+                        StateMachineName,
                         new Uri(_baseAddress));
         }
 
         [Test]
-        public async Task GetControllerReturnsBadRequestIfComponentUnknown() {
+        public async Task GetControllerReturnsBadRequestIfComponentUnknown()
+        {
             var wrongComponentName = ComponentName + "Wrong";
             var address = $"http://127.0.0.1:{Port}/api/Functions?componentName={wrongComponentName}&StateMachineName={StateMachineName}";
 
@@ -49,11 +51,13 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
-        public async Task PostTaskControllerReturnsBadRequestIfUnknownComponentName() {
+        public async Task PostTaskControllerReturnsBadRequestIfUnknownComponentName()
+        {
             var wrongComponentName = ComponentName + "Wrong";
             var address = $"http://127.0.0.1:{Port}/api/Functions";
 
-            var functionResult = new FunctionResult() {
+            var functionResult = new FunctionResult()
+            {
                 ComponentName = wrongComponentName,
                 StateMachineName = StateMachineName
             };
