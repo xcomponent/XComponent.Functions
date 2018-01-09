@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -14,7 +13,7 @@ namespace XComponent.Functions.Core
 {
     public class FunctionsManager : IFunctionsManager
     {
-        private OwinServer _owinServerRef = null;
+        private OwinServer _owinServerRef;
         private readonly ConcurrentQueue<FunctionParameter> _taskQueue = new ConcurrentQueue<FunctionParameter>();
 
         internal event Action<FunctionResult> NewTaskFunctionResult;
@@ -36,30 +35,24 @@ namespace XComponent.Functions.Core
         }
 
         public void ApplyFunctionResult(FunctionResult result, object publicMember, object internalMember, object context, object sender) {
-            try
-            {
-                if (publicMember != null && result.PublicMember != null)
-                {
-                   var newPublicMember = SerializationHelper.DeserializeObjectFromType(publicMember.GetType(), result.PublicMember);
-                    XCClone.Clone(newPublicMember, publicMember);
-                }
-                if (internalMember != null && result.InternalMember != null)
-                {
-                    var newInternalMember = SerializationHelper.DeserializeObjectFromType(internalMember.GetType(), result.InternalMember);
-                    XCClone.Clone(newInternalMember, internalMember);
-                }
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine(e);
-            }
 
+            if (publicMember != null && result.PublicMember != null)
+            {
+                var newPublicMember = SerializationHelper.DeserializeObjectFromType(publicMember.GetType(), result.PublicMember);
+                XCClone.Clone(newPublicMember, publicMember);
+            }
+            if (internalMember != null && result.InternalMember != null)
+            {
+                var newInternalMember = SerializationHelper.DeserializeObjectFromType(internalMember.GetType(), result.InternalMember);
+                XCClone.Clone(newInternalMember, internalMember);
+            }
+            
             lock (_senderWrapperBySender)
             {
                 if (_senderWrapperBySender.ContainsKey(sender)) {
                     _senderWrapperBySender[sender].TriggerSender(result, context);
                 } else {
-                    Debug.WriteLine("Sender received from worker not found in dictionary");
+                    throw new Exception("Sender received from worker not found in dictionary");
                 }
             }
         }

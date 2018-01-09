@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace XComponent.Functions.Utilities
@@ -39,9 +40,8 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                throw new SerializationException($"Couldn't serialize object {obj}",e );
             }
-            return null;
         }
 
         public static object DeserializeObjectFromType(Type objType, object objectToDeserialize)
@@ -59,11 +59,8 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                throw new SerializationException($"Couldn't deserialize object from {objType}", e);
             }
-
-            return null;
-
         }
     }
 }
