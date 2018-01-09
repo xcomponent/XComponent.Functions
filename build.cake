@@ -45,7 +45,8 @@ Task("Test")
     else
     {
       // Use XBuild
-      MSBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj", settings =>
+      XBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj",
+          settings =>
         settings.SetConfiguration(configuration));
     }
     NUnit3(GetFiles("./**/bin/" + configuration + "/*Test*.dll"));	
@@ -64,7 +65,7 @@ Task("Build")
     else
     {
       // Use XBuild
-      MSBuild("./src/XComponent.Functions/XComponent.Functions.csproj", settings =>
+      XBuild("./src/XComponent.Functions/XComponent.Functions.csproj", settings =>
         settings.SetConfiguration(configuration));
     }
 });
