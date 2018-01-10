@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using XComponent.Functions.Core;
+using XComponent.Functions.Core.Exceptions;
 
 namespace XComponent.Functions.Controllers
 {
@@ -10,15 +11,27 @@ namespace XComponent.Functions.Controllers
     {
         [SwaggerResponse(HttpStatusCode.OK, "Next available task", typeof(FunctionParameter))]
         [SwaggerResponse(HttpStatusCode.NoContent, "No task available")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request")]
         public HttpResponseMessage GetTask(string componentName, string stateMachineName)
         {
-            var response = FunctionsFactory.Instance.GetTask(componentName, stateMachineName);
-            return Request.CreateResponse<FunctionParameter>(response == null ? HttpStatusCode.NoContent : HttpStatusCode.OK, response);
+            try {
+                var response = FunctionsFactory.Instance.GetTask(componentName, stateMachineName);
+                return Request.CreateResponse<FunctionParameter>(response == null ? HttpStatusCode.NoContent : HttpStatusCode.OK, response);
+            } catch(ValidationException ve) {
+                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve);
+            }
         }
 
-        public void PostTaskResult(FunctionResult result)
+        [SwaggerResponse(HttpStatusCode.NoContent, "Task result received")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request")]
+        public HttpResponseMessage PostTaskResult(FunctionResult result)
         {
-            FunctionsFactory.Instance.AddTaskResult(result);
+            try {
+                FunctionsFactory.Instance.AddTaskResult(result);
+                return Request.CreateResponse(HttpStatusCode.NoContent);
+            } catch(ValidationException ve) {
+                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve);
+            }
         }
 
     }

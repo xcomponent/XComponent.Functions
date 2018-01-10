@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Newtonsoft.Json;
+using XComponent.Functions.Core.Exceptions;
 
 namespace XComponent.Functions.Utilities
 {
@@ -39,9 +40,8 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                throw new ValidationException($"Couldn't deserialize object '{obj}'", e);
             }
-            return null;
         }
 
         public static object DeserializeObjectFromType(Type objType, object objectToDeserialize)
@@ -59,11 +59,8 @@ namespace XComponent.Functions.Utilities
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                throw new ValidationException($"Couldn't deserialize object '{objectToDeserialize}' from '{objType}'", e);
             }
-
-            return null;
-
         }
     }
 }

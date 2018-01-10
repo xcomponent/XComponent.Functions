@@ -82,6 +82,7 @@
     <Compile Include="Core\Clone\ReferenceEqualityComparer.cs" />
     <Compile Include="Core\Clone\XCClone.cs" />
     <Compile Include="Core\Exceptions\FunctionsFactoryException.cs" />
+    <Compile Include="Core\Exceptions\ValidationException.cs" />
     <Compile Include="Core\FunctionParameter.cs" />
     <Compile Include="Core\FunctionResult.cs" />
     <Compile Include="Core\FunctionsFactory.cs" />
