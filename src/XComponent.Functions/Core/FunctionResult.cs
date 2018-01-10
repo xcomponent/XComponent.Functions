@@ -11,6 +11,7 @@ namespace XComponent.Functions.Core
         public object InternalMember { get; set; }
         public List<SenderResult> Senders { get; set; }
         public string RequestId { get; set; }
-
+        public string ErrorMessage { get; set; }
+        public bool Error { get; set; }
     }
 }
