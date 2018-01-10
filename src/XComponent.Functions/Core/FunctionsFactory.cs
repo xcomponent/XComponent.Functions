@@ -103,6 +103,20 @@ namespace XComponent.Functions.Core
 
         }
 
+        private FunctionsConfiguration _configuration;
+        
+        public FunctionsConfiguration Configuration
+        {
+            get { return _configuration; }
+            set 
+            { 
+                if (value.TimeoutInMillis <= 0)
+                    throw new ValidationException($"Invalid timeout value: {value.TimeoutInMillis}");
+
+                _configuration = value; 
+            }
+        }
+
         internal static int GetFunctionsManagerKey(string componentName, string stateMachineName)
         {
             if (string.IsNullOrEmpty(componentName) || string.IsNullOrEmpty(stateMachineName))
