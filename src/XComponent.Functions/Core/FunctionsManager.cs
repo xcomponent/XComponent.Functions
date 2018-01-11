@@ -9,7 +9,6 @@ using XComponent.Functions.Core.Owin;
 using XComponent.Functions.Core.Senders;
 using XComponent.Functions.Core.Exceptions;
 using XComponent.Functions.Utilities;
-using System.Collections.Concurrent;
 
 namespace XComponent.Functions.Core
 {
@@ -66,7 +65,7 @@ namespace XComponent.Functions.Core
             }
         }
 
-        public Task<FunctionResult> AddTaskAsync(object xcEvent, object publicMember, object internalMember,
+        public async Task<FunctionResult> AddTaskAsync(object xcEvent, object publicMember, object internalMember,
             object context, object sender, [CallerMemberName] string functionName = null)
         {
             if (xcEvent == null) throw new ValidationException("Event should not be null");
@@ -89,11 +88,13 @@ namespace XComponent.Functions.Core
             var autoResetEvent = new AutoResetEvent(false);
 
             Action<FunctionResult> resultHandler = null;
+
             resultHandler = delegate (FunctionResult result)
             {
                 if (result.RequestId == requestId)
                 {
                     NewTaskFunctionResult -= resultHandler;
+
                     lock (_pendingRequests)
                     {
                         _pendingRequests.Remove(requestId);
@@ -112,21 +113,43 @@ namespace XComponent.Functions.Core
 
             _taskQueue.Enqueue(functionParameter);
 
-            return Task.Run(() =>
+            var cancellationTokenSource = new CancellationTokenSource();
+            var timeoutValue = FunctionsFactory.Instance.Configuration.TimeoutInMillis;
+
+            if (timeoutValue.HasValue)
             {
-                autoResetEvent.WaitOne();
-                return functionResult;
-            });
+                cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(timeoutValue.Value));
+            }
+
+            try {
+                return await Task.Run(() =>
+                {
+                    autoResetEvent.WaitOne();
+                    return functionResult;
+                }, cancellationTokenSource.Token);
+            } catch(TaskCanceledException) {
+                return new FunctionResult
+                {
+                    IsError = true,
+                    ErrorMessage = $"Timeout exceeded ({timeoutValue} ms)"
+                };
+            } catch(Exception e) {
+                return new FunctionResult
+                {
+                    IsError = true,
+                    ErrorMessage = e.ToString()
+                };
+            }
         }
 
         public Task AddTask(object xcEvent, object publicMember, object internalMember,
             object context, object sender, [CallerMemberName] string functionName = null)
         {
             return AddTaskAsync(xcEvent, publicMember, internalMember, context, sender, functionName)
-                    .ContinueWith((taskResult) =>
-                    {
-                        ApplyFunctionResult(taskResult.Result, publicMember, internalMember, context, sender);
-                    });
+                .ContinueWith((taskResult) =>
+                {
+                    ApplyFunctionResult(taskResult.Result, publicMember, internalMember, context, sender);
+                });
         }
 
         public void AddTaskResult(FunctionResult functionResult)
