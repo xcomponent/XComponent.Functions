@@ -89,6 +89,7 @@ Task("Merge")
 
 Task("CreatePackage")
     .IsDependentOn("Merge")
+    .IsDependentOn("Test")
     .Does(() =>
     {
 		var assemblyInfo = ParseAssemblyInfo("src/XComponent.Functions/Properties/AssemblyInfo.cs");
