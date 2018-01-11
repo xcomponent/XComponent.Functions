@@ -54,9 +54,9 @@ namespace XComponent.Functions.Test
         {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() =>
+            var exception = Assert.ThrowsAsync<ValidationException>(() =>
                 functionsManager.
-                    AddTask(new object(), new object(), new object(), new object(), null, "function"));
+                    AddTaskAsync(new object(), new object(), new object(), new object(), null, "function"));
 
             Assert.IsTrue(exception.Message.Contains("Sender"),
                     "Exception message should show where is the problem");
@@ -67,9 +67,9 @@ namespace XComponent.Functions.Test
         {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() =>
+            var exception = Assert.ThrowsAsync<ValidationException>(() =>
                 functionsManager.
-                    AddTask(new object(), null, new object(), new object(), new object(), "function"));
+                    AddTaskAsync(new object(), null, new object(), new object(), new object(), "function"));
 
             Assert.IsTrue(exception.Message.Contains("Public"),
                     "Exception message should show where is the problem");
@@ -80,9 +80,9 @@ namespace XComponent.Functions.Test
         {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() =>
+            var exception = Assert.ThrowsAsync<ValidationException>(() =>
                 functionsManager.
-                    AddTask(new object(), new object(), null, new object(), new object(), "function"));
+                    AddTaskAsync(new object(), new object(), null, new object(), new object(), "function"));
 
             Assert.IsTrue(exception.Message.Contains("Internal"),
                     "Exception message should show where is the problem");
@@ -93,9 +93,9 @@ namespace XComponent.Functions.Test
         {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() =>
+            var exception = Assert.ThrowsAsync<ValidationException>(() =>
                 functionsManager.
-                    AddTask(new object(), new object(), new object(), null, new object(), "function"));
+                    AddTaskAsync(new object(), new object(), new object(), null, new object(), "function"));
 
             Assert.IsTrue(exception.Message.Contains("Context"),
                     "Exception message should show where is the problem");
@@ -106,9 +106,9 @@ namespace XComponent.Functions.Test
         {
             var functionsManager = new FunctionsManager("component", "statemachine");
 
-            var exception = Assert.Throws<ValidationException>(() =>
+            var exception = Assert.ThrowsAsync<ValidationException>(() =>
                 functionsManager.
-                    AddTask(null, new object(), new object(), new object(), new object(), "function"));
+                    AddTaskAsync(null, new object(), new object(), new object(), new object(), "function"));
 
             Assert.IsTrue(exception.Message.Contains("Event"),
                     "Exception message should show where is the problem");
@@ -144,6 +144,29 @@ namespace XComponent.Functions.Test
             var publishedResult = await task;
 
             Assert.AreEqual(functionResult, publishedResult);
+        }
+
+        [Test]
+        public async Task AddTaskAsyncShouldReturnErrorResultIfTimeout()
+        {
+            FunctionsFactory.Instance.Configuration.TimeoutInMillis = 1;
+
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            var xcEvent = new object();
+            var publicMember = new object();
+            var internalMember = new object();
+            var context = new object();
+            var sender = Substitute.For<ISender>();
+
+            var task = functionsManager.AddTaskAsync(xcEvent, publicMember, internalMember, context, sender, "function");
+
+            var publishedResult = await task;
+
+            Assert.IsTrue(publishedResult.IsError);
+            Assert.IsTrue(publishedResult.ErrorMessage.Contains("Timeout"));
+
+            FunctionsFactory.Instance.Configuration.TimeoutInMillis = null;
         }
 
         [Test]

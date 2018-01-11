@@ -12,6 +12,6 @@ namespace XComponent.Functions.Core
         public List<SenderResult> Senders { get; set; }
         public string RequestId { get; set; }
         public string ErrorMessage { get; set; }
-        public bool Error { get; set; }
+        public bool IsError { get; set; }
     }
 }
