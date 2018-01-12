@@ -159,9 +159,7 @@ namespace XComponent.Functions.Test
             var context = new object();
             var sender = Substitute.For<ISender>();
 
-            var task = functionsManager.AddTaskAsync(xcEvent, publicMember, internalMember, context, sender, "function");
-
-            var publishedResult = await task;
+            var publishedResult = await functionsManager.AddTaskAsync(xcEvent, publicMember, internalMember, context, sender, "function");
 
             Assert.IsTrue(publishedResult.IsError);
             Assert.IsTrue(publishedResult.ErrorMessage.Contains("Timeout"));
