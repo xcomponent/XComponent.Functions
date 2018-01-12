@@ -161,7 +161,8 @@ namespace XComponent.Functions.Core
 
         public FunctionParameter GetTask()
         {
-            return _taskQueue.TryDequeue(out var functionParameter) ? functionParameter : null;
+            FunctionParameter functionParameter = null;
+            return _taskQueue.TryDequeue(out functionParameter) ? functionParameter : null;
         }
 
         private void RegisterSender(object sender)
