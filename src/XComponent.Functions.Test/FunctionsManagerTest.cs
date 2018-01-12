@@ -299,6 +299,37 @@ namespace XComponent.Functions.Test
         }
 
         [Test]
+        public void ObjectsHaveNoPropertyToDeserializeSoIgnoringThemInsteadOfThrowing()
+        {
+            var functionResult = new FunctionResult()
+            {
+                PublicMember = new JObject(),
+                InternalMember = new JObject()
+            };
+
+            var sender = new object();
+            var context = new object();
+            var publicMember = new object();
+            var internalMember = new object();
+            var functionsManager = new FunctionsManager("component", "statemachine");
+
+            functionsManager.AddTask(new object(),
+                    publicMember,
+                    internalMember,
+                    context,
+                    sender);
+
+            Assert.DoesNotThrow(() =>
+            {
+                functionsManager.ApplyFunctionResult(functionResult,
+                        publicMember,
+                        internalMember,
+                        context,
+                        sender);
+            });
+        }
+
+        [Test]
         public void ApplyFunctionResultShouldThrowInvalidSenderValidationException()
         {
             var sender = new object();

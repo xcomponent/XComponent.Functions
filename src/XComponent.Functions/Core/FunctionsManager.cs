@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using XComponent.Functions.Core.Clone;
 using XComponent.Functions.Core.Owin;
 using XComponent.Functions.Core.Senders;
@@ -50,13 +52,27 @@ namespace XComponent.Functions.Core
             if (publicMember != null && result.PublicMember != null)
             {
                 var newPublicMember = SerializationHelper.DeserializeObjectFromType(publicMember.GetType(), result.PublicMember);
-                XCClone.Clone(newPublicMember, publicMember);
+                if (newPublicMember.GetType() == publicMember.GetType())
+                {
+                    XCClone.Clone(newPublicMember, publicMember);
+                }
+                else
+                {
+                    Trace.WriteLine($"Deserialized object type {newPublicMember.GetType()} doesn't match required type {publicMember.GetType()}");
+                }
             }
 
             if (internalMember != null && result.InternalMember != null)
             {
                 var newInternalMember = SerializationHelper.DeserializeObjectFromType(internalMember.GetType(), result.InternalMember);
-                XCClone.Clone(newInternalMember, internalMember);
+                if (newInternalMember.GetType() == internalMember.GetType())
+                {
+                    XCClone.Clone(newInternalMember, publicMember);
+                }
+                else
+                {
+                    Trace.WriteLine($"Deserialized object type {newInternalMember.GetType()} doesn't match required type {internalMember.GetType()}");
+                }
             }
 
             lock (_senderWrapperBySender)
