@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XComponent.Functions", "XComponent.Functions\XComponent.Functions.csproj", "{5653C5BF-16E8-4B95-81D7-E70254B0B6F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XComponent.Functions.Test", "XComponent.Functions.Test\XComponent.Functions.Test.csproj", "{C462BA6B-9BFE-485C-AD50-21071417F69C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XComponent.Functions.Integration.Test", "XComponent.Functions.Integration.Test\XComponent.Functions.Integration.Test.csproj", "{F32A1063-B8D3-4D1E-9C5A-B7A27788DCA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,15 @@ Global
 		{C462BA6B-9BFE-485C-AD50-21071417F69C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C462BA6B-9BFE-485C-AD50-21071417F69C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C462BA6B-9BFE-485C-AD50-21071417F69C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F32A1063-B8D3-4D1E-9C5A-B7A27788DCA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F32A1063-B8D3-4D1E-9C5A-B7A27788DCA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F32A1063-B8D3-4D1E-9C5A-B7A27788DCA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F32A1063-B8D3-4D1E-9C5A-B7A27788DCA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {243E9FF7-AC40-40FC-A87D-5514C89CF110}
 	EndGlobalSection
 EndGlobal

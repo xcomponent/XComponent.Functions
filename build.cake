@@ -41,11 +41,15 @@ Task("Test")
       // Use MSBuild
       MSBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj",
           settings => settings.SetConfiguration(configuration));
+      MSBuild("./src/XComponent.Functions.Integration.Test/XComponent.Functions.Integration.Test.csproj",
+          settings => settings.SetConfiguration(configuration));
     }
     else
     {
       // Use XBuild
       XBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj",
+          settings => settings.SetConfiguration(configuration));
+      XBuild("./src/XComponent.Functions.Integration.Test/XComponent.Functions.Integration.Test.csproj",
           settings => settings.SetConfiguration(configuration));
     }
     NUnit3(GetFiles("./**/bin/" + configuration + "/*Test*.dll"));	
