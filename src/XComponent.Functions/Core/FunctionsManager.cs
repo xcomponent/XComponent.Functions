@@ -83,25 +83,23 @@ namespace XComponent.Functions.Core
                 StateMachineName, functionName);
 
             var requestId = functionParameter.RequestId;
-            FunctionResult functionResult = null;
 
-            var autoResetEvent = new AutoResetEvent(false);
+            var taskCompletionSource = new TaskCompletionSource<FunctionResult>();
 
             Action<FunctionResult> resultHandler = null;
 
             resultHandler = delegate (FunctionResult result)
             {
-                if (result.RequestId == requestId)
-                {
-                    NewTaskFunctionResult -= resultHandler;
+                if (result.RequestId != requestId) return;
 
-                    lock (_pendingRequests)
-                    {
-                        _pendingRequests.Remove(requestId);
-                    }
-                    functionResult = result;
-                    autoResetEvent.Set();
+                NewTaskFunctionResult -= resultHandler;
+
+                lock (_pendingRequests)
+                {
+                    _pendingRequests.Remove(requestId);
                 }
+
+                taskCompletionSource.SetResult(result);
             };
 
             lock (_pendingRequests)
@@ -119,14 +117,12 @@ namespace XComponent.Functions.Core
             if (timeoutValue.HasValue)
             {
                 cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(timeoutValue.Value));
+
+                cancellationTokenSource.Token.Register(() => taskCompletionSource.TrySetCanceled());
             }
 
             try {
-                return await Task.Run(() =>
-                {
-                    autoResetEvent.WaitOne();
-                    return functionResult;
-                }, cancellationTokenSource.Token);
+                return await taskCompletionSource.Task;
             } catch(TaskCanceledException) {
                 return new FunctionResult
                 {
@@ -165,13 +161,7 @@ namespace XComponent.Functions.Core
 
         public FunctionParameter GetTask()
         {
-            FunctionParameter functionParameter = null;
-            if (_taskQueue.TryDequeue(out functionParameter))
-            {
-                return functionParameter;
-            }
-
-            return null;
+            return _taskQueue.TryDequeue(out var functionParameter) ? functionParameter : null;
         }
 
         private void RegisterSender(object sender)
