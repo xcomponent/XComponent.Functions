@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace XComponent.Functions.Core
 {
@@ -7,5 +8,7 @@ namespace XComponent.Functions.Core
         FunctionParameter GetTask(string componentName, string stateMachineName);
         void AddTaskResult(FunctionResult result);
         FunctionsConfiguration Configuration { get; set; }
+        void AddKeyValuePair(string componentName, string key, string value);
+        List<KeyValuePairSettingsItem> GetKeyValuePairs();
     }
 }

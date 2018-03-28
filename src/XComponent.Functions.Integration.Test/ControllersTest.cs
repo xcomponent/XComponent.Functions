@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using XComponent.Functions.Core;
 using System.Net;
@@ -113,5 +114,49 @@ namespace XComponent.Functions.Test
             Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
             Assert.AreEqual(1000, FunctionsFactory.Instance.Configuration.TimeoutInMillis);
         }
+
+        [Test]
+        public async Task GetStringResourcesReturnsEmptyList()
+        {
+            var address = $"http://127.0.0.1:{Port}/api/StringResources";
+            var response = await new HttpClient().GetAsync(address);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var list = JsonConvert.DeserializeObject<List<KeyValuePairSettingsItem>>(responseContent);
+
+            CollectionAssert.IsEmpty(list);
+        }
+
+        [Test]
+        public async Task GetStringResources()
+        {
+            var address = $"http://127.0.0.1:{Port}/api/StringResources";
+            var component = "component";
+            var key = "key";
+            var value = "value";
+            FunctionsFactory.Instance.AddKeyValuePair(component, key, value);
+            var response = await new HttpClient().GetAsync(address);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var list = JsonConvert.DeserializeObject<List<KeyValuePairSettingsItem>>(responseContent);
+            var expectedlist = new List<KeyValuePairSettingsItem>
+            {
+                new KeyValuePairSettingsItem
+                {
+                    ComponentName = component,
+                    Key = key,
+                    Value = value
+                }
+            };
+            Assert.AreEqual(expectedlist.Count, list.Count);
+            for (var i = 0; i < list.Count; i++)
+            {
+                Assert.AreEqual(expectedlist[i].ComponentName, list[i].ComponentName);
+                Assert.AreEqual(expectedlist[i].Key, list[i].Key);
+                Assert.AreEqual(expectedlist[i].Value, list[i].Value);
+            }
+        }
+
     }
 }

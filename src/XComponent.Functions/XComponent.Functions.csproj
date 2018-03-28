@@ -77,6 +77,7 @@
   <ItemGroup>
     <Compile Include="Controllers\FunctionsController.cs" />
     <Compile Include="Controllers\ConfigurationController.cs" />
+    <Compile Include="Controllers\StringResourcesController.cs" />
     <Compile Include="Core\Clone\ArrayExtensions.cs" />
     <Compile Include="Core\Clone\ArrayTraverse.cs" />
     <Compile Include="Core\Clone\DeepCopyExtension.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="Core\FunctionsManager.cs" />
     <Compile Include="Core\IFunctionsManager.cs" />
     <Compile Include="Core\FunctionsProtocol.cs" />
+    <Compile Include="Core\KeyValuePairSettingsItem.cs" />
     <Compile Include="Core\Owin\OwinServer.cs" />
     <Compile Include="Core\Owin\OwinServerFactory.cs" />
     <Compile Include="Core\Senders\Senders.cs" />
