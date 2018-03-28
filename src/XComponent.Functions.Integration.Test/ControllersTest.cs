@@ -118,6 +118,8 @@ namespace XComponent.Functions.Test
         [Test]
         public async Task GetStringResourcesReturnsEmptyList()
         {
+            FunctionsFactory.Instance.ClearKeyValuePairs();
+
             var address = $"http://127.0.0.1:{Port}/api/StringResources";
             var response = await new HttpClient().GetAsync(address);
 

@@ -42,6 +42,11 @@ namespace XComponent.Functions.Core
             return KeyValuePairs;
         }
 
+        public void ClearKeyValuePairs()
+        {
+            KeyValuePairs.Clear();
+        }
+
         public void AddKeyValuePair(string componentName, string key, string value)
         {
             lock (_functionsFactoryByKey)

@@ -10,5 +10,6 @@ namespace XComponent.Functions.Core
         FunctionsConfiguration Configuration { get; set; }
         void AddKeyValuePair(string componentName, string key, string value);
         List<KeyValuePairSettingsItem> GetKeyValuePairs();
+        void ClearKeyValuePairs();
     }
 }
