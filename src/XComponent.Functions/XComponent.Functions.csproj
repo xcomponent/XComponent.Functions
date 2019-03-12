@@ -30,9 +30,11 @@
     <BuildOutputInPackage Include="$(MSBuildThisFileDirectory)..\..\packaging\XComponent.Functions.dll" />
   </ItemGroup>
 
+
+
   <Target Name="ILRepack" AfterTargets="Build">
     <PropertyGroup>
-        <WorkingDirectory>$(MSBuildThisFileDirectory)$(OutputPath)</WorkingDirectory>
+      <WorkingDirectory>$(MSBuildThisFileDirectory)$(OutputPath)</WorkingDirectory>
     </PropertyGroup>
     <ItemGroup>
 			<InputAssemblies Include="$(WorkingDirectory)\XComponent.Functions.dll" />
@@ -43,14 +45,18 @@
 			<InputAssemblies Include="$(WorkingDirectory)\System.Web.Http.Owin.dll" />
 		</ItemGroup>
 
+    <ItemGroup>
+      <InternalizeExcludeAssemblies Include="^XComponent.Functions" />
+    </ItemGroup>
+
     <ILRepack
       OutputType="$(OutputType)"
       MainAssembly="$(AssemblyName).dll"
       OutputAssembly="$(MSBuildThisFileDirectory)..\..\packaging\$(AssemblyName).dll"
       InputAssemblies="@(InputAssemblies)"
       WilcardInputAssemblies="true"
-      Internalize="true"
-      Parallel="false"
+      Union="true"
+      InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)"
       WorkingDirectory="$(WorkingDirectory)" />
   </Target>
 </Project>
