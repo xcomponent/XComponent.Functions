@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using XComponent.Functions.Core;
 using XComponent.Functions.Core.Exceptions;
+using XComponent.Functions.Utilities;
 
 namespace XComponent.Functions.Controllers
 {
@@ -20,11 +16,11 @@ namespace XComponent.Functions.Controllers
         {
             try
             {
-                return Request.CreateResponse(FunctionsFactory.Instance.GetKeyValuePairs());
+                return Request.CreateResponse(FunctionsFactory.Instance.GetKeyValuePairs()).SetMandatoryFields();
             }
             catch (ValidationException ve)
             {
-                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve);
+                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve).SetMandatoryFields();
             }
         }
     }
