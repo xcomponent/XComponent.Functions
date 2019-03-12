@@ -21,7 +21,8 @@ namespace XComponent.Functions.Test
         [SetUp]
         public void SetUp()
         {
-            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            // can use Trace ??? Listeners don't exist with .netcore
+            //Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
         }
 
         [Test]

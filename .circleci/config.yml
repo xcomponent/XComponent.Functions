@@ -1,0 +1,102 @@
+version: 2
+references:
+  restore_repo: &restore_repo
+    restore_cache:
+      name: Restore checked out code
+      keys:
+        - v1-xcomponentfunction-repo-{{ .Branch }}-{{ .Revision }}
+        - v1-xcomponentfunction-repo-{{ .Branch }}-
+        - v1-xcomponentfunction-repo-
+
+  restore_nuget: &restore_nuget
+    restore_cache:
+      name: Restore nuget cache
+      keys:
+        - v1-nuget-{{ .Branch }}-{{ checksum "shasum.tmp" }}
+        - v1-nuget-{{ .Branch }}-
+        - v1-nuget-
+
+  generate_nuget_shasum: &generate_nuget_shasum
+    run:
+      name: Generate cache shasum
+      command: find . -name "*.csproj" -exec shasum {} \+ | sort -n > shasum.tmp
+
+  save_nuget: &save_nuget
+    save_cache:
+      name: Save nuget cache
+      key: v1-nuget-{{ .Branch }}-{{ checksum "shasum.tmp" }}
+      paths:
+          - /home/circleci/.nuget
+ 
+jobs:
+  checkout_code:
+    docker:
+      - image: microsoft/dotnet:2.1-sdk
+    steps:
+      - checkout
+      - save_cache:
+          key: v1-xcomponentfunction-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+
+  build_xcomponent_function:
+    docker:
+      - image: microsoft/dotnet:2.1-sdk
+    steps:
+      - *restore_repo
+      - *generate_nuget_shasum
+      - *restore_nuget
+      - run:
+          name: XComponent Function - Build Default
+          command: |
+            if [ "${CIRCLE_TAG}" == "" ]; then
+              ./build.sh -t Default
+            else
+              ./build.sh -t Default -buildConfiguration=Release -buildVersion=$CIRCLE_TAG
+            fi
+      - *save_nuget
+      - persist_to_workspace:
+          root: /root/project
+          paths:
+            - packaging
+            - nuget
+
+  deploy_nuget:
+    docker:
+      - image: microsoft/dotnet:2.1-sdk
+    steps:
+      - *restore_repo
+      - *generate_nuget_shasum
+      - *restore_nuget
+      - attach_workspace:
+          at: /home/circleci/project
+      - run:
+          name: Deploy nuget package
+          command: ./build.sh -t PushPackage -buildConfiguration=Release -buildVersion=$CIRCLE_TAG -nugetkey=$NUGET_API_KEY
+ 
+workflows:
+  version: 2
+  xcomponent_function:
+    jobs:
+      - checkout_code:
+          filters:
+            tags:
+              only: /^[0-9]++\.[0-9]++\.[0-9]++/
+            branches:
+              only: /.*/
+      - build_xcomponent_function:
+          requires:
+          - checkout_code
+          filters:
+            tags:
+              only: /^[0-9]++\.[0-9]++\.[0-9]++/
+            branches:
+              only: /.*/
+      - deploy_nuget:
+          requires:
+          - build_xcomponent_function
+          filters:
+            tags:
+              only: /^[0-9]++\.[0-9]++\.[0-9]++/
+            branches:
+              ignore: /.*/

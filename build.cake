@@ -1,18 +1,23 @@
-#tool nuget:?package=NUnit.ConsoleRunner&version=3.4.0
-#tool "nuget:?package=ILRepack"
+#tool "nuget:?package=NUnit.ConsoleRunner&version=3.9.0"
+#addin "nuget:?package=Cake.DoInDirectory&version=3.2.0"
+#addin "Cake.FileHelpers&version=3.1.0"
+#addin "Cake.XComponent&version=6.0.1"
+#addin "Cake.Incubator&version=3.0.0"
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 
 var target = Argument("target", "Default");
-var configuration = Argument("buildConfiguration", "Release");
+var buildConfiguration = Argument("buildConfiguration", "Debug");
+var version = Argument("buildVersion", "1.0.0");
+var apiKey = Argument("nugetKey", "");
 
 //////////////////////////////////////////////////////////////////////
 // PREPARATION
 //////////////////////////////////////////////////////////////////////
 
 // Define directories.
-var buildDir = Directory("./src/XComponent.Functions/bin") + Directory(configuration);
+var buildDir = Directory("./src/XComponent.Functions/bin") + Directory(buildConfiguration);
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -22,88 +27,87 @@ Task("Clean")
     .Does(() =>
 {
     CleanDirectory(buildDir);
+    CleanDirectory("nuget");
+    CleanDirectory("packaging");
 });
 
 Task("Restore-NuGet-Packages")
     .IsDependentOn("Clean")
     .Does(() =>
 {
-    NuGetRestore("./src/XComponent.Functions.sln");
+    DotNetCoreRestore("src/XComponent.Functions.sln");
 });
-
-Task("Test")
-  .IsDependentOn("Build")
-  .IsDependentOn("Merge")
-  .Does(() =>
-  {
-    if(IsRunningOnWindows())
-    {
-      // Use MSBuild
-      MSBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj",
-          settings => settings.SetConfiguration(configuration));
-      MSBuild("./src/XComponent.Functions.Integration.Test/XComponent.Functions.Integration.Test.csproj",
-          settings => settings.SetConfiguration(configuration));
-    }
-    else
-    {
-      // Use XBuild
-      XBuild("./src/XComponent.Functions.Test/XComponent.Functions.Test.csproj",
-          settings => settings.SetConfiguration(configuration));
-      XBuild("./src/XComponent.Functions.Integration.Test/XComponent.Functions.Integration.Test.csproj",
-          settings => settings.SetConfiguration(configuration));
-    }
-    NUnit3(GetFiles("./**/bin/" + configuration + "/*Test*.dll"));	
-  });
 
 Task("Build")
     .IsDependentOn("Restore-NuGet-Packages")
     .Does(() =>
 {
-    if(IsRunningOnWindows())
-    {
-      // Use MSBuild
-      MSBuild("./src/XComponent.Functions/XComponent.Functions.csproj", settings =>
-        settings.SetConfiguration(configuration));
-    }
-    else
-    {
-      // Use XBuild
-      XBuild("./src/XComponent.Functions/XComponent.Functions.csproj", settings =>
-        settings.SetConfiguration(configuration));
-    }
+    DotNetCoreBuild(
+    "src/XComponent.Functions.sln",
+    new DotNetCoreBuildSettings {
+        Configuration = buildConfiguration,
+        VersionSuffix = version,
+        MSBuildSettings = new DotNetCoreMSBuildSettings{}.SetVersion(version),
+    });
 });
 
-Task("Merge")
+Task("Test")
   .IsDependentOn("Build")
   .Does(() =>
-{
+  {
 
-	var binariesDir = "./src/XComponent.Functions/bin/" + configuration + "/";
-	var assemblyPaths = GetFiles(binariesDir + "*.dll");
+    var settings = new DotNetCoreTestSettings
+    {
+        Configuration = buildConfiguration
+    };
 
-    var ilRepackSettings = new ILRepackSettings { Parallel = false, ArgumentCustomization = args => args.Append(@"/target:library /allowDup /internalize") };
-
-	ILRepack(
-		"./generated/XComponent.Functions.Core.dll",
-		binariesDir + "XComponent.Functions.dll",
-		assemblyPaths,
-    ilRepackSettings
-		);
-});
+    var projectFiles = GetFiles("./**/*Test*.csproj");
+    foreach(var file in projectFiles)
+    {
+        DotNetCoreTest(file.FullPath, settings);
+    }
+  });
 
 Task("CreatePackage")
-    .IsDependentOn("Merge")
     .IsDependentOn("Test")
     .Does(() =>
     {
-		var assemblyInfo = ParseAssemblyInfo("src/XComponent.Functions/Properties/AssemblyInfo.cs");
-        var nugetPackSettings = new NuGetPackSettings()
-        { 
-            OutputDirectory = @"./generated",
-			Version = assemblyInfo.AssemblyVersion,
-        };
+        DotNetCorePack(
+            "src/XComponent.Functions/XComponent.Functions.csproj",
+            new DotNetCorePackSettings  {
+                Configuration = buildConfiguration,
+                IncludeSymbols = true,
+                NoBuild = true,
+                OutputDirectory = @"nuget",
+                VersionSuffix = version,
+                MSBuildSettings = new DotNetCoreMSBuildSettings{}.SetVersion(version),
+            }
+        );
+    });
 
-        NuGetPack("src/XComponent.Functions/XComponent.Functions.nuspec", nugetPackSettings);
+//////////////////////////////////////////////////////////////////////
+// TASK PUSH
+//////////////////////////////////////////////////////////////////////
+
+Task("PushPackage")
+    .Does(() =>
+    {
+        if (!string.IsNullOrEmpty(apiKey))
+        {
+            DoInDirectory("./nuget", () =>
+            {
+                var package = "./XComponent.Functions." + version + ".nupkg";
+                DotNetCoreNuGetPush(package, new DotNetCoreNuGetPushSettings
+                {
+                    Source = "https://api.nuget.org/v3/index.json",
+                    ApiKey = apiKey
+                });
+            });
+        }
+        else
+        {
+            Error("No Api Key provided. Can't deploy package to Nuget.");
+        }
     });
 
 //////////////////////////////////////////////////////////////////////

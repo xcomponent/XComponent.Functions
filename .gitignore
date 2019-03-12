@@ -2,11 +2,11 @@
 [Bb]in/
 [Oo]bj/
 [Pp]ackages/
-generated/
+packaging/
 .vs
 
 # Build related
-tools/**
+tools/
 !tools/packages.config
 
 ## Ignore Visual Studio temporary files, build results, and
