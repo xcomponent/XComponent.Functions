@@ -4,6 +4,7 @@ using System.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using XComponent.Functions.Core;
 using XComponent.Functions.Core.Exceptions;
+using XComponent.Functions.Utilities;
 
 namespace XComponent.Functions.Controllers
 {
@@ -16,9 +17,9 @@ namespace XComponent.Functions.Controllers
         {
             try {
                 var response = FunctionsFactory.Instance.GetTask(componentName, stateMachineName);
-                return Request.CreateResponse<FunctionParameter>(response == null ? HttpStatusCode.NoContent : HttpStatusCode.OK, response);
+                return Request.CreateResponse<FunctionParameter>(response == null ? HttpStatusCode.NoContent : HttpStatusCode.OK, response).SetMandatoryFields();
             } catch(ValidationException ve) {
-                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve);
+                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve).SetMandatoryFields();
             }
         }
 
@@ -28,9 +29,9 @@ namespace XComponent.Functions.Controllers
         {
             try {
                 FunctionsFactory.Instance.AddTaskResult(result);
-                return Request.CreateResponse(HttpStatusCode.NoContent);
+                return Request.CreateResponse(HttpStatusCode.NoContent).SetMandatoryFields();
             } catch(ValidationException ve) {
-                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve);
+                return Request.CreateResponse<ValidationException>(HttpStatusCode.BadRequest, ve).SetMandatoryFields();
             }
         }
 
