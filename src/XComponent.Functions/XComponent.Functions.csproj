@@ -37,26 +37,13 @@
       <WorkingDirectory>$(MSBuildThisFileDirectory)$(OutputPath)</WorkingDirectory>
     </PropertyGroup>
     <ItemGroup>
-			<InputAssemblies Include="$(WorkingDirectory)\XComponent.Functions.dll" />
-			<InputAssemblies Include="$(WorkingDirectory)\Newtonsoft.Json.dll" />
-			<InputAssemblies Include="$(WorkingDirectory)\Swashbuckle.Core.dll" />
-			<InputAssemblies Include="$(WorkingDirectory)\Microsoft.Owin.Hosting.dll" />
-			<InputAssemblies Include="$(WorkingDirectory)\Microsoft.Owin.Host.HttpListener.dll" />
-			<InputAssemblies Include="$(WorkingDirectory)\System.Web.Http.Owin.dll" />
+			<InputAssemblies Include="$(WorkingDirectory)\*.dll" />
 		</ItemGroup>
 
     <ItemGroup>
       <InternalizeExcludeAssemblies Include="^XComponent.Functions" />
     </ItemGroup>
 
-    <ILRepack
-      OutputType="$(OutputType)"
-      MainAssembly="$(AssemblyName).dll"
-      OutputAssembly="$(MSBuildThisFileDirectory)..\..\packaging\$(AssemblyName).dll"
-      InputAssemblies="@(InputAssemblies)"
-      WilcardInputAssemblies="true"
-      Union="true"
-      InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)"
-      WorkingDirectory="$(WorkingDirectory)" />
+    <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(MSBuildThisFileDirectory)..\..\packaging\$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" WilcardInputAssemblies="true" Union="true" InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
   </Target>
 </Project>

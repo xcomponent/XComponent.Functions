@@ -3,6 +3,7 @@
 [Oo]bj/
 [Pp]ackages/
 packaging/
+nuget/
 .vs
 
 # Build related

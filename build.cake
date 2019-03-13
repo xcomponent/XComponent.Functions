@@ -31,17 +31,24 @@ Task("Clean")
     CleanDirectory("packaging");
 });
 
-Task("Restore-NuGet-Packages")
+Task("BuildIntegrationTest")
+    .Does(() =>
+{
+    DotNetCoreRestore("src/XComponent.Functions.Integration.Test.sln");
+    DotNetCoreBuild(
+    "src/XComponent.Functions.Integration.Test.sln",
+    new DotNetCoreBuildSettings {
+        Configuration = buildConfiguration,
+        VersionSuffix = version,
+        MSBuildSettings = new DotNetCoreMSBuildSettings{}.SetVersion(version),
+    });
+});
+
+Task("Build")
     .IsDependentOn("Clean")
     .Does(() =>
 {
     DotNetCoreRestore("src/XComponent.Functions.sln");
-});
-
-Task("Build")
-    .IsDependentOn("Restore-NuGet-Packages")
-    .Does(() =>
-{
     DotNetCoreBuild(
     "src/XComponent.Functions.sln",
     new DotNetCoreBuildSettings {
@@ -53,6 +60,7 @@ Task("Build")
 
 Task("Test")
   .IsDependentOn("Build")
+  .IsDependentOn("BuildIntegrationTest")
   .Does(() =>
   {
 
